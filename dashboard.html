@@ -76,7 +76,7 @@
         window.onload = function() {
             tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: CLIENT_ID,
-                scope: 'https://www.googleapis.com/auth/drive.file',
+                scope: 'https://www.googleapis.com/auth/drive',
                 callback: (tokenResponse) => {
                     accessToken = tokenResponse.access_token;
                     loadClients(); 
