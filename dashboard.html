@@ -57,11 +57,10 @@
         let tokenClient;
         let accessToken = null;
         
-        // --- THE FILE EXPLORER BRAIN ---
         let rootFolderId = null;
         let currentFolderId = null;
         let currentFolderName = "Master Vault";
-        let folderHistory = []; // Remembers the path so the Back button works!
+        let folderHistory = []; 
 
         const fileArea = document.getElementById('file-area');
         const searchInput = document.getElementById('search-input');
@@ -69,7 +68,7 @@
         window.onload = function() {
             tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: CLIENT_ID,
-                scope: 'https://www.googleapis.com/auth/drive', // FULL ACCESS BADGE
+                scope: 'https://www.googleapis.com/auth/drive', 
                 callback: (tokenResponse) => {
                     accessToken = tokenResponse.access_token;
                     initDrive(); 
@@ -77,17 +76,15 @@
             });
         };
 
-        // --- BUTTON LISTENERS ---
         document.getElementById('connect-btn').addEventListener('click', () => {
             if (!accessToken) tokenClient.requestAccessToken({prompt: 'select_account'}); 
-            else fetchFilesFromDrive(); // Just refresh if already connected
+            else fetchFilesFromDrive(); 
         });
 
         document.getElementById('upload-btn').addEventListener('click', () => {
             document.getElementById('file-input').click();
         });
 
-        // --- LOCATE THE MASTER VAULT ---
         async function initDrive() {
             fileArea.innerHTML = '<p style="color: #0056b3; font-weight: bold;">Locating Master Vault...</p>';
             try {
@@ -100,26 +97,21 @@
                     return;
                 }
                 
-                // Set the starting point
                 rootFolderId = data.files[0].id;
                 currentFolderId = rootFolderId;
                 currentFolderName = "Client Documents";
                 folderHistory = []; 
 
-                // Show the Upload Button and change Connect to Refresh
                 document.getElementById('upload-btn').style.display = 'block';
                 document.getElementById('connect-btn').innerText = "Refresh View";
 
-                // Load the files!
                 fetchFilesFromDrive();
             } catch(e) { console.error(e); }
         }
 
-        // --- THE NEW FILE EXPLORER SYSTEM ---
         async function fetchFilesFromDrive() {
             fileArea.innerHTML = '<p style="color: #0056b3; font-weight: bold;">Loading contents...</p>';
             try {
-                // Notice this query! It ONLY looks inside the current folder you clicked on.
                 let query = `'${currentFolderId}' in parents and trashed=false`;
                 const response = await fetch(`https://www.googleapis.com/drive/v3/files?fields=files(id,name,mimeType,webContentLink)&q=${encodeURIComponent(query)}`, {
                     method: 'GET',
@@ -129,7 +121,7 @@
                 
                 fileArea.innerHTML = ''; 
 
-                // --- 1. BUILD THE TOP BAR & BACK BUTTON ---
+                // TOP BAR BUILDER
                 const topBar = document.createElement('div');
                 topBar.style.paddingBottom = "15px";
                 topBar.style.marginBottom = "15px";
@@ -138,25 +130,23 @@
                 topBar.style.alignItems = "center";
                 topBar.style.gap = "15px";
 
-                // Only show Back button if we are deep in a folder
+                // BULLETPROOF BACK BUTTON
                 if (folderHistory.length > 0) {
                     const backBtn = document.createElement('button');
-                    backBtn.type = "button"; // Forces browser to not treat it as a refresh!
-                    backBtn.innerText = "⬅️ Return";
+                    backBtn.innerText = "⬅️ Go Back";
                     backBtn.className = "action-btn view-btn";
                     backBtn.style.padding = "5px 15px";
                     
-                    backBtn.addEventListener('click', function(event) {
-                        event.preventDefault(); // Stops any default glitching
+                    // Direct click assignment to prevent glitching
+                    backBtn.onclick = function() {
+                        backBtn.innerText = "Loading..."; // INSTANT FEEDBACK
+                        backBtn.style.backgroundColor = "#666";
                         
-                        // Grab the previous folder from our history and go to it
                         const previousFolder = folderHistory.pop();
                         currentFolderId = previousFolder.id;
                         currentFolderName = previousFolder.name;
-                        
-                        fetchFilesFromDrive(); // Reload the screen
-                    });
-                    
+                        fetchFilesFromDrive(); 
+                    };
                     topBar.appendChild(backBtn);
                 }
                 
@@ -166,13 +156,11 @@
                 topBar.appendChild(pathText);
                 fileArea.appendChild(topBar);
 
-                // --- 2. DISPLAY FILES AND FOLDERS ---
                 if (!data.files || data.files.length === 0) {
                     fileArea.innerHTML += '<p style="color: #666;">This folder is empty.</p>';
                     return;
                 }
 
-                // Sort: Put Folders at the top, Files at the bottom
                 data.files.sort((a, b) => {
                     if (a.mimeType === 'application/vnd.google-apps.folder' && b.mimeType !== 'application/vnd.google-apps.folder') return -1;
                     if (a.mimeType !== 'application/vnd.google-apps.folder' && b.mimeType === 'application/vnd.google-apps.folder') return 1;
@@ -186,27 +174,24 @@
                     const nameSpan = document.createElement('span');
                     nameSpan.className = 'file-name'; 
 
-                    // IF IT IS A FOLDER
                     if (file.mimeType === 'application/vnd.google-apps.folder') {
                         nameSpan.innerText = "📁 " + file.name;
                         nameSpan.style.fontWeight = "bold";
 
                         const openBtn = document.createElement('button');
                         openBtn.className = 'download-link folder-btn';
-                        openBtn.innerText = "Open Folder";
-                        openBtn.addEventListener('click', () => {
-                            // Remember where we are, then jump inside!
+                        openBtn.innerText = "Open";
+                        openBtn.onclick = function() {
+                            openBtn.innerText = "Opening..."; 
                             folderHistory.push({id: currentFolderId, name: currentFolderName});
                             currentFolderId = file.id;
                             currentFolderName = file.name;
                             fetchFilesFromDrive();
-                        });
+                        };
 
                         row.appendChild(nameSpan);
                         row.appendChild(openBtn);
-                    } 
-                    // IF IT IS A REGULAR FILE
-                    else {
+                    } else {
                         nameSpan.innerText = "📄 " + file.name;
 
                         const downloadLink = document.createElement('a');
@@ -224,18 +209,15 @@
                         row.appendChild(nameSpan);
                         row.appendChild(downloadLink);
                     }
-                    
                     fileArea.appendChild(row);
                 });
             } catch (error) { fileArea.innerHTML = '<p style="color: red;">Failed to load files.</p>'; }
         }
 
-        // --- SMART UPLOAD LOGIC ---
         document.getElementById('file-input').addEventListener('change', async (event) => {
             const file = event.target.files[0];
             if (!file) return;
 
-            // Warn them if they try to upload directly to the Master Vault instead of a client folder
             if (currentFolderId === rootFolderId) {
                 if(!confirm("You are uploading to the main Master Vault. Do you want to open a Client Folder first? Click OK to upload anyway.")) {
                     return;
@@ -247,7 +229,7 @@
             const metadata = { 
                 'name': file.name, 
                 'mimeType': file.type,
-                'parents': [currentFolderId] // Drops the file exactly where you are currently looking!
+                'parents': [currentFolderId] 
             };
             const form = new FormData();
             form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
@@ -261,12 +243,11 @@
                 });
                 if(response.ok) {
                     alert("Success! File uploaded.");
-                    fetchFilesFromDrive(); // Refresh to show the new file
+                    fetchFilesFromDrive(); 
                 } else alert("Upload failed.");
             } catch(e) { alert("Error: " + e.message); }
         });
 
-        // --- SEARCH SYSTEM ---
         searchInput.addEventListener('input', function(event) {
             const searchTerm = event.target.value.toLowerCase(); 
             const allFiles = document.querySelectorAll('.file-row'); 
@@ -283,7 +264,7 @@
 
         const firebaseConfig = {
             apiKey: "AIzaSyCb_VeOkx-sAAoBodr6gSZisAVNC_N5NVs",
-            authDomain: "office-dms.firebaseapp.com", // Fixed domain!
+            authDomain: "office-dms.firebaseapp.com", 
             projectId: "office-dms",
             storageBucket: "your-project-id.appspot.com",
             messagingSenderId: "123456789",
