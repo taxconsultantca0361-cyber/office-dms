@@ -35,6 +35,7 @@
         <h3>ADMIN CONSOLE</h3>
         <p style="font-size: 12px; color: #ffbaba;">Full Access Granted</p>
         <input type="text" id="search-input" class="search-box" placeholder="Search for a file...">
+        <button id="logout-btn" style="width: 100%; padding: 10px; margin-top: 20px; background-color: #34495e; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🚪 Log Out</button>
     </div>
 
     <div class="main-content">
@@ -211,6 +212,34 @@
             document.querySelectorAll('.file-row').forEach(row => {
                 const fileName = row.querySelector('.file-name').innerText.toLowerCase(); 
                 row.style.display = fileName.includes(searchTerm) ? 'flex' : 'none';
+            });
+        });
+    </script>
+    <script type="module">
+        // 1. Import Firebase tools for logging out
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+        // 2. !!! PASTE YOUR FIREBASE CONFIG HERE !!!
+        const firebaseConfig = {
+            apiKey: "AIzaSyCb_VeOkx-sAAoBodr6gSZisAVNC_N5NVs",
+            authDomain: "your-app.firebaseapp.com",
+            projectId: "office-dms",
+            storageBucket: "your-project-id.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // 3. Make the button work
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            signOut(auth).then(() => {
+                // When successful, send them back to the login screen!
+                window.location.href = "index.html";
+            }).catch((error) => {
+                alert("Error logging out: " + error.message);
             });
         });
     </script>
