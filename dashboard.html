@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Office DMS - Dashboard</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background-color: #f4f7f6; display: flex; height: 100vh; }
+        .sidebar { width: 250px; background-color: #2c3e50; color: white; padding: 20px; box-sizing: border-box; }
+        .sidebar h3 { margin-top: 0; border-bottom: 1px solid #455666; padding-bottom: 10px; }
+        
+        /* New Search Box Design */
+        .search-box { width: 100%; padding: 10px; margin-top: 15px; border-radius: 5px; border: none; box-sizing: border-box; font-size: 14px; }
+        
+        .main-content { flex-grow: 1; padding: 30px; box-sizing: border-box; overflow-y: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .btn-group { display: flex; gap: 10px; }
+        .action-btn { padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; border: none; color: white; }
+        .upload-btn { background-color: #27ae60; }
+        .upload-btn:hover { background-color: #219653; }
+        .view-btn { background-color: #0056b3; }
+        .view-btn:hover { background-color: #004494; }
+        .file-area { background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); min-height: 300px; }
+        .file-row { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; align-items: center; }
+        .file-row:hover { background-color: #f9f9f9; }
+        .download-link { color: #0056b3; text-decoration: none; font-weight: bold; padding: 5px 15px; border: 1px solid #0056b3; border-radius: 4px; }
+        .download-link:hover { background-color: #0056b3; color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h3>Client List</h3>
+        <input type="text" id="search-input" class="search-box" placeholder="Search for a file or client...">
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h2>Document Center</h2>
+            <div class="btn-group">
+                <button class="action-btn view-btn" id="view-btn">1. Connect & View Files</button>
+                <button class="action-btn upload-btn" id="upload-btn">2. + Upload New File</button>
+            </div>
+        </div>
+
+        <div class="file-area" id="file-area">
+            <p style="color: #666;">Click "Connect & View Files" to load your documents from Google Drive.</p>
+        </div>
+    </div>
+
+    <input type="file" id="file-input" style="display: none;">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
+    <script>
+        // 1. PASTE YOUR SECRETS HERE ONE LAST TIME!
+        const CLIENT_ID = '537056870708-utq2jtkio6ccv779c8dmjivac2mo8dnt.apps.googleusercontent.com'; 
+        const API_KEY = 'AIzaSyCgEPejR5Vi6njkaQAyqRPA7-O5mY9gF8g';
+        
+        let tokenClient;
+        let accessToken = null;
+        let currentAction = null; 
+
+        window.onload = function() {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: 'https://www.googleapis.com/auth/drive.file',
+                callback: (tokenResponse) => {
+                    accessToken = tokenResponse.access_token;
+                    if (currentAction === 'upload') document.getElementById('file-input').click(); 
+                    else if (currentAction === 'view') fetchFilesFromDrive();
+                },
+            });
+        };
+
+        const uploadBtn = document.getElementById('upload-btn');
+        const viewBtn = document.getElementById('view-btn');
+        const fileInput = document.getElementById('file-input');
+        const fileArea = document.getElementById('file-area');
+        const searchInput = document.getElementById('search-input');
+
+        viewBtn.addEventListener('click', () => {
+            currentAction = 'view';
+            if (!accessToken) tokenClient.requestAccessToken({prompt: 'consent'});
+            else fetchFilesFromDrive();
+        });
+
+        uploadBtn.addEventListener('click', () => {
+            currentAction = 'upload';
+            if (!accessToken) tokenClient.requestAccessToken({prompt: 'consent'});
+            else fileInput.click();
+        });
+
+        fileInput.addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            alert("Uploading: " + file.name + "... Please wait.");
+
+            const metadata = { 'name': file.name, 'mimeType': file.type };
+            const form = new FormData();
+            form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+            form.append('file', file);
+
+            try {
+                const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                    method: 'POST',
+                    headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
+                    body: form
+                });
+                if(response.ok) {
+                    alert("Success! The file is now in your Google Drive.");
+                    fetchFilesFromDrive(); 
+                } else alert("Upload failed.");
+            } catch(e) { alert("Error: " + e.message); }
+        });
+
+        async function fetchFilesFromDrive() {
+            fileArea.innerHTML = '<p style="color: #0056b3; font-weight: bold;">Loading your files from Google Drive...</p>';
+            try {
+                const response = await fetch('https://www.googleapis.com/drive/v3/files?fields=files(id,name,webContentLink)&q=trashed=false', {
+                    method: 'GET',
+                    headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
+                });
+                const data = await response.json();
+                const files = data.files;
+                
+                fileArea.innerHTML = ''; 
+
+                if (!files || files.length === 0) {
+                    fileArea.innerHTML = '<p style="color: #666;">Your Document Center is empty. Upload a file to get started!</p>';
+                    return;
+                }
+
+                files.forEach(file => {
+                    const row = document.createElement('div');
+                    row.className = 'file-row'; // This class is important for our search!
+
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'file-name'; // Added a class so we can read the text
+                    nameSpan.innerText = "📄 " + file.name;
+
+                    const downloadLink = document.createElement('a');
+                    downloadLink.className = 'download-link';
+                    downloadLink.innerText = "Download";
+                    
+                    if (file.webContentLink) {
+                        downloadLink.href = file.webContentLink;
+                        downloadLink.target = "_blank"; 
+                    } else {
+                        downloadLink.href = "#";
+                        downloadLink.innerText = "Processing...";
+                    }
+                    
+                    row.appendChild(nameSpan);
+                    row.appendChild(downloadLink);
+                    fileArea.appendChild(row);
+                });
+            } catch (error) { fileArea.innerHTML = '<p style="color: red;">Failed to load files: ' + error.message + '</p>'; }
+        }
+
+        // --- THE NEW LIVE SEARCH SYSTEM ---
+        searchInput.addEventListener('input', function(event) {
+            const searchTerm = event.target.value.toLowerCase(); // Get what the user typed and make it lowercase
+            const allFiles = document.querySelectorAll('.file-row'); // Find all the file rows on the screen
+
+            allFiles.forEach(row => {
+                const fileName = row.querySelector('.file-name').innerText.toLowerCase(); // Read the text of each file
+                
+                // If the file name includes what the user typed, show it. Otherwise, hide it!
+                if (fileName.includes(searchTerm)) {
+                    row.style.display = 'flex';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

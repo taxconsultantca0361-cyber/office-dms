@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Office DMS - ADMIN CONSOLE</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background-color: #f4f7f6; display: flex; height: 100vh; }
+        /* Dark Red Sidebar for Admin */
+        .sidebar { width: 250px; background-color: #7a1f1f; color: white; padding: 20px; box-sizing: border-box; }
+        .sidebar h3 { margin-top: 0; border-bottom: 1px solid #9c3636; padding-bottom: 10px; }
+        .search-box { width: 100%; padding: 10px; margin-top: 15px; border-radius: 5px; border: none; box-sizing: border-box; }
+        .main-content { flex-grow: 1; padding: 30px; box-sizing: border-box; overflow-y: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 2px solid #7a1f1f; padding-bottom: 10px;}
+        .btn-group { display: flex; gap: 10px; }
+        .action-btn { padding: 10px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; border: none; color: white; }
+        .view-btn { background-color: #0056b3; }
+        .upload-btn { background-color: #27ae60; }
+        .folder-btn { background-color: #d35400; } /* Orange Folder Button */
+        
+        .file-area { background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); min-height: 300px; }
+        .file-row { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; align-items: center; }
+        .file-row:hover { background-color: #f9f9f9; }
+        
+        /* Action Buttons for Files */
+        .file-actions { display: flex; gap: 10px; }
+        .download-link { color: #0056b3; text-decoration: none; font-weight: bold; padding: 5px 15px; border: 1px solid #0056b3; border-radius: 4px; }
+        .delete-btn { background-color: #c0392b; color: white; border: none; padding: 5px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;}
+        .delete-btn:hover { background-color: #922b21; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h3>ADMIN CONSOLE</h3>
+        <p style="font-size: 12px; color: #ffbaba;">Full Access Granted</p>
+        <input type="text" id="search-input" class="search-box" placeholder="Search for a file...">
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h2 style="color: #7a1f1f;">Document Management - Admin</h2>
+            <div class="btn-group">
+                <button class="action-btn view-btn" id="view-btn">1. View Files</button>
+                <button class="action-btn upload-btn" id="upload-btn">2. + Upload File</button>
+                <button class="action-btn folder-btn" id="folder-btn">3. + Upload Folder</button>
+            </div>
+        </div>
+
+        <div class="file-area" id="file-area">
+            <p style="color: #666;">Welcome Admin. Connect to view and manage company documents.</p>
+        </div>
+    </div>
+
+    <input type="file" id="file-input" style="display: none;">
+    <input type="file" id="folder-input" webkitdirectory directory multiple style="display: none;">
+    
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+        // !!! PASTE YOUR SECRETS HERE !!!
+        const CLIENT_ID = '537056870708-utq2jtkio6ccv779c8dmjivac2mo8dnt.apps.googleusercontent.com'; 
+        const API_KEY = 'AIzaSyCgEPejR5Vi6njkaQAyqRPA7-O5mY9gF8g';
+        
+        let tokenClient;
+        let accessToken = null;
+        let currentAction = null; 
+
+        window.onload = function() {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: 'https://www.googleapis.com/auth/drive.file',
+                callback: (tokenResponse) => {
+                    accessToken = tokenResponse.access_token;
+                    if (currentAction === 'upload-file') document.getElementById('file-input').click(); 
+                    else if (currentAction === 'upload-folder') document.getElementById('folder-input').click();
+                    else if (currentAction === 'view' || currentAction === 'delete') fetchFilesFromDrive();
+                },
+            });
+        };
+
+        document.getElementById('view-btn').addEventListener('click', () => {
+            currentAction = 'view';
+            if (!accessToken) tokenClient.requestAccessToken({prompt: 'consent'}); else fetchFilesFromDrive();
+        });
+
+        document.getElementById('upload-btn').addEventListener('click', () => {
+            currentAction = 'upload-file';
+            if (!accessToken) tokenClient.requestAccessToken({prompt: 'consent'}); else document.getElementById('file-input').click();
+        });
+
+        document.getElementById('folder-btn').addEventListener('click', () => {
+            currentAction = 'upload-folder';
+            if (!accessToken) tokenClient.requestAccessToken({prompt: 'consent'}); else document.getElementById('folder-input').click();
+        });
+
+        // --- SINGLE FILE UPLOAD ---
+        document.getElementById('file-input').addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            uploadToGoogleDrive(file);
+        });
+
+        // --- FOLDER UPLOAD (Loops through all files inside) ---
+        document.getElementById('folder-input').addEventListener('change', async (event) => {
+            const files = event.target.files;
+            if (files.length === 0) return;
+            
+            alert(`Found ${files.length} files in the folder. Uploading them now...`);
+            
+            for (let i = 0; i < files.length; i++) {
+                await uploadToGoogleDrive(files[i], false); // Pass false to hide individual alerts
+            }
+            alert("Folder upload complete!");
+            fetchFilesFromDrive();
+        });
+
+        // The Reusable Upload Function
+        async function uploadToGoogleDrive(file, showAlerts = true) {
+            if(showAlerts) alert("Uploading: " + file.name + "... Please wait.");
+            const metadata = { 'name': file.name, 'mimeType': file.type };
+            const form = new FormData();
+            form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+            form.append('file', file);
+
+            try {
+                const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                    method: 'POST',
+                    headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
+                    body: form
+                });
+                if(response.ok && showAlerts) {
+                    alert("Success! The file is now in your Google Drive.");
+                    fetchFilesFromDrive(); 
+                }
+            } catch(e) { console.error("Upload failed", e); }
+        }
+
+        // --- FETCH FILES & CREATE DELETE BUTTONS ---
+        async function fetchFilesFromDrive() {
+            const fileArea = document.getElementById('file-area');
+            fileArea.innerHTML = '<p style="color: #7a1f1f; font-weight: bold;">Syncing with secure vault...</p>';
+            try {
+                const response = await fetch('https://www.googleapis.com/drive/v3/files?fields=files(id,name,webContentLink)&q=trashed=false', {
+                    method: 'GET',
+                    headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
+                });
+                const data = await response.json();
+                
+                fileArea.innerHTML = ''; 
+                if (!data.files || data.files.length === 0) {
+                    fileArea.innerHTML = '<p style="color: #666;">The vault is empty.</p>';
+                    return;
+                }
+
+                data.files.forEach(file => {
+                    const row = document.createElement('div');
+                    row.className = 'file-row';
+
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'file-name'; 
+                    nameSpan.innerText = "📄 " + file.name;
+
+                    // Action Group (Download + Delete)
+                    const actionsDiv = document.createElement('div');
+                    actionsDiv.className = 'file-actions';
+
+                    const downloadLink = document.createElement('a');
+                    downloadLink.className = 'download-link';
+                    downloadLink.innerText = "Download";
+                    downloadLink.href = file.webContentLink || "#";
+                    downloadLink.target = "_blank"; 
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-btn';
+                    deleteBtn.innerText = "Delete";
+                    
+                    // --- THE DELETE LOGIC ---
+                    deleteBtn.addEventListener('click', async () => {
+                        if(confirm(`Are you absolutely sure you want to delete "${file.name}"?`)) {
+                            currentAction = 'delete';
+                            if (!accessToken) {
+                                tokenClient.requestAccessToken({prompt: 'consent'});
+                                return;
+                            }
+                            try {
+                                const delResponse = await fetch('https://www.googleapis.com/drive/v3/files/' + file.id, {
+                                    method: 'DELETE',
+                                    headers: new Headers({ 'Authorization': 'Bearer ' + accessToken })
+                                });
+                                if(delResponse.ok) {
+                                    alert("File deleted.");
+                                    fetchFilesFromDrive(); // Refresh list
+                                }
+                            } catch(e) { alert("Delete failed."); }
+                        }
+                    });
+
+                    actionsDiv.appendChild(downloadLink);
+                    actionsDiv.appendChild(deleteBtn);
+                    
+                    row.appendChild(nameSpan);
+                    row.appendChild(actionsDiv);
+                    fileArea.appendChild(row);
+                });
+            } catch (error) { fileArea.innerHTML = '<p style="color: red;">Failed to load files.</p>'; }
+        }
+
+        // Live Search System
+        document.getElementById('search-input').addEventListener('input', function(event) {
+            const searchTerm = event.target.value.toLowerCase(); 
+            document.querySelectorAll('.file-row').forEach(row => {
+                const fileName = row.querySelector('.file-name').innerText.toLowerCase(); 
+                row.style.display = fileName.includes(searchTerm) ? 'flex' : 'none';
+            });
+        });
+    </script>
+</body>
+</html>
