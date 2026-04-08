@@ -141,18 +141,25 @@
                 // Only show Back button if we are deep in a folder
                 if (folderHistory.length > 0) {
                     const backBtn = document.createElement('button');
+                    backBtn.type = "button"; // Forces browser to not treat it as a refresh!
                     backBtn.innerText = "⬅️ Back";
                     backBtn.className = "action-btn view-btn";
                     backBtn.style.padding = "5px 15px";
-                    backBtn.addEventListener('click', () => {
+                    
+                    backBtn.addEventListener('click', function(event) {
+                        event.preventDefault(); // Stops any default glitching
+                        
+                        // Grab the previous folder from our history and go to it
                         const previousFolder = folderHistory.pop();
                         currentFolderId = previousFolder.id;
                         currentFolderName = previousFolder.name;
-                        fetchFilesFromDrive();
+                        
+                        fetchFilesFromDrive(); // Reload the screen
                     });
+                    
                     topBar.appendChild(backBtn);
                 }
-
+                
                 const pathText = document.createElement('strong');
                 pathText.style.fontSize = "18px";
                 pathText.innerText = "📂 " + currentFolderName;
