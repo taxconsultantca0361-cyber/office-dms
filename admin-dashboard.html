@@ -6,240 +6,426 @@
     <title>Office DMS - ADMIN CONSOLE</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background-color: #f4f7f6; display: flex; height: 100vh; }
-        /* Dark Red Sidebar for Admin */
-        .sidebar { width: 250px; background-color: #7a1f1f; color: white; padding: 20px; box-sizing: border-box; }
-        .sidebar h3 { margin-top: 0; border-bottom: 1px solid #9c3636; padding-bottom: 10px; }
-        .search-box { width: 100%; padding: 10px; margin-top: 15px; border-radius: 5px; border: none; box-sizing: border-box; }
+
+        /* Dark Red Admin Sidebar */
+        .sidebar { width: 260px; background-color: #7a1f1f; color: white; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 0; }
+        .sidebar h3 { margin-top: 0; border-bottom: 1px solid #9c3636; padding-bottom: 10px; font-size: 16px; }
+        .sidebar-badge { font-size: 12px; color: #ffbaba; margin-top: -8px; margin-bottom: 12px; }
+        .search-box { width: 100%; padding: 10px; border-radius: 5px; border: none; box-sizing: border-box; font-size: 14px; }
+        .sidebar-info { margin-top: 18px; font-size: 12px; color: #ffbaba; line-height: 1.8; }
+        .logout-btn { width: 100%; padding: 10px; margin-top: auto; background-color: #34495e; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px; }
+        .logout-btn:hover { background-color: #2c3e50; }
+
+        /* Main Content */
         .main-content { flex-grow: 1; padding: 30px; box-sizing: border-box; overflow-y: auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 2px solid #7a1f1f; padding-bottom: 10px;}
-        .btn-group { display: flex; gap: 10px; }
-        .action-btn { padding: 10px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; border: none; color: white; }
-        .view-btn { background-color: #0056b3; }
-        .upload-btn { background-color: #27ae60; }
-        .folder-btn { background-color: #d35400; } /* Orange Folder Button */
-        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #7a1f1f; padding-bottom: 12px; flex-wrap: wrap; gap: 10px; }
+        .header h2 { margin: 0; color: #7a1f1f; }
+
+        /* Top Action Buttons */
+        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        .action-btn { padding: 9px 14px; border-radius: 5px; font-weight: bold; cursor: pointer; border: none; color: white; font-size: 13px; }
+        .btn-view    { background-color: #0056b3; }
+        .btn-view:hover    { background-color: #004494; }
+        .btn-upload  { background-color: #27ae60; }
+        .btn-upload:hover  { background-color: #1e8449; }
+        .btn-folder  { background-color: #d35400; }
+        .btn-folder:hover  { background-color: #b84500; }
+        .btn-newfolder { background-color: #7d3c98; }
+        .btn-newfolder:hover { background-color: #6c3483; }
+
+        /* File Area */
         .file-area { background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); min-height: 300px; }
-        .file-row { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; align-items: center; }
-        .file-row:hover { background-color: #f9f9f9; }
-        
-        /* Action Buttons for Files */
-        .file-actions { display: flex; gap: 10px; }
-        .download-link { color: #0056b3; text-decoration: none; font-weight: bold; padding: 5px 15px; border: 1px solid #0056b3; border-radius: 4px; }
-        .delete-btn { background-color: #c0392b; color: white; border: none; padding: 5px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;}
-        .delete-btn:hover { background-color: #922b21; }
+
+        /* Top Bar (Back Button + Breadcrumb) */
+        .topbar { display: flex; align-items: center; gap: 12px; padding-bottom: 12px; margin-bottom: 8px; border-bottom: 1px solid #ddd; flex-wrap: wrap; }
+        .back-btn { padding: 5px 14px; background-color: #0056b3; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; white-space: nowrap; }
+        .back-btn:hover { background-color: #004494; }
+
+        /* Breadcrumb */
+        .breadcrumb { font-size: 14px; color: #555; display: flex; align-items: center; flex-wrap: wrap; gap: 2px; }
+        .breadcrumb .crumb-link { color: #0056b3; cursor: pointer; padding: 2px 4px; border-radius: 3px; }
+        .breadcrumb .crumb-link:hover { background-color: #e8f4fd; text-decoration: underline; }
+        .breadcrumb .crumb-sep { color: #aaa; margin: 0 2px; }
+        .breadcrumb .crumb-current { color: #333; font-weight: bold; padding: 2px 4px; }
+
+        /* File count */
+        .file-count { font-size: 12px; color: #999; margin-bottom: 12px; }
+
+        /* File Rows */
+        .file-row { display: flex; justify-content: space-between; padding: 11px 8px; border-bottom: 1px solid #eee; align-items: center; }
+        .file-row:last-child { border-bottom: none; }
+        .file-row:hover { background-color: #fafafa; }
+        .file-name { font-size: 14px; }
+        .file-name.is-folder { font-weight: bold; }
+
+        /* File Action Buttons */
+        .file-actions { display: flex; gap: 8px; align-items: center; }
+        .btn-open { background-color: #e8f4fd; border: 1px solid #0056b3; color: #0056b3; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; }
+        .btn-open:hover { background-color: #0056b3; color: white; }
+        .btn-download { color: #0056b3; text-decoration: none; font-weight: bold; padding: 5px 12px; border: 1px solid #0056b3; border-radius: 4px; font-size: 13px; }
+        .btn-download:hover { background-color: #0056b3; color: white; }
+        .btn-delete { background-color: #c0392b; color: white; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; }
+        .btn-delete:hover { background-color: #922b21; }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
-        <h3>ADMIN CONSOLE</h3>
-        <p style="font-size: 12px; color: #ffbaba;">Full Access Granted</p>
-        <input type="text" id="search-input" class="search-box" placeholder="Search for a file...">
-        <button id="logout-btn" style="width: 100%; padding: 10px; margin-top: 20px; background-color: #34495e; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🚪 Log Out</button>
+        <h3>⚙️ ADMIN CONSOLE</h3>
+        <p class="sidebar-badge">Full Access Granted</p>
+        <input type="text" id="search-input" class="search-box" placeholder="Search in current folder...">
+        <div class="sidebar-info">
+            <div>📂 Browse folders & subfolders</div>
+            <div>⬆️ Upload files & entire folders</div>
+            <div>📁 Create new folders</div>
+            <div>🗑️ Delete any file or folder</div>
+        </div>
+        <button id="logout-btn" class="logout-btn">🚪 Log Out</button>
     </div>
 
     <div class="main-content">
         <div class="header">
-            <h2 style="color: #7a1f1f;">Document Management - Admin</h2>
+            <h2>Document Management — Admin</h2>
             <div class="btn-group">
-                <button class="action-btn view-btn" id="view-btn">1. View Files</button>
-                <button class="action-btn upload-btn" id="upload-btn">2. + Upload File</button>
-                <button class="action-btn folder-btn" id="folder-btn">3. + Upload Folder</button>
+                <button class="action-btn btn-view" id="view-btn">📂 View Files</button>
+                <button class="action-btn btn-upload" id="upload-btn" style="display:none;">⬆️ Upload File</button>
+                <button class="action-btn btn-folder" id="folder-btn" style="display:none;">📁 Upload Folder</button>
+                <button class="action-btn btn-newfolder" id="new-folder-btn" style="display:none;">➕ New Folder</button>
             </div>
         </div>
 
         <div class="file-area" id="file-area">
-            <p style="color: #666;">Welcome Admin. Connect to view and manage company documents.</p>
+            <p style="color:#666;">Welcome, Admin. Click "View Files" to connect and manage company documents.</p>
         </div>
     </div>
 
-    <input type="file" id="file-input" style="display: none;">
-    <input type="file" id="folder-input" webkitdirectory directory multiple style="display: none;">
-    
+    <input type="file" id="file-input" style="display:none;">
+    <input type="file" id="folder-input" webkitdirectory directory multiple style="display:none;">
+
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script>
-        // !!! PASTE YOUR SECRETS HERE !!!
-        const CLIENT_ID = '537056870708-utq2jtkio6ccv779c8dmjivac2mo8dnt.apps.googleusercontent.com'; 
-        const API_KEY = 'AIzaSyCgEPejR5Vi6njkaQAyqRPA7-O5mY9gF8g';
-        
+        const CLIENT_ID = '537056870708-utq2jtkio6ccv779c8dmjivac2mo8dnt.apps.googleusercontent.com';
+        const API_KEY   = 'AIzaSyCgEPejR5Vi6njkaQAyqRPA7-O5mY9gF8g';
+
         let tokenClient;
         let accessToken = null;
-        let currentAction = null; 
 
-        window.onload = function() {
+        // pathStack holds the full navigation path as [{id, name}, ...]
+        // pathStack[0] is always the root "Client Documents" folder.
+        // pathStack[last] is the current folder.
+        let pathStack = [];
+
+        const fileArea = document.getElementById('file-area');
+
+        function currentFolder() { return pathStack[pathStack.length - 1]; }
+
+        window.onload = function () {
             tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: CLIENT_ID,
-                scope: 'https://www.googleapis.com/auth/drive.file',
+                scope: 'https://www.googleapis.com/auth/drive',
                 callback: (tokenResponse) => {
                     accessToken = tokenResponse.access_token;
-                    if (currentAction === 'upload-file') document.getElementById('file-input').click(); 
-                    else if (currentAction === 'upload-folder') document.getElementById('folder-input').click();
-                    else if (currentAction === 'view' || currentAction === 'delete') fetchFilesFromDrive();
+                    initDrive();
                 },
             });
         };
 
+        // ── Button Wiring ──────────────────────────────────────────────────────
         document.getElementById('view-btn').addEventListener('click', () => {
-            currentAction = 'view';
-            if (!accessToken) tokenClient.requestAccessToken({prompt: 'consent'}); else fetchFilesFromDrive();
+            if (!accessToken) tokenClient.requestAccessToken({ prompt: 'select_account' });
+            else initDrive();
         });
 
         document.getElementById('upload-btn').addEventListener('click', () => {
-            currentAction = 'upload-file';
-            if (!accessToken) tokenClient.requestAccessToken({prompt: 'consent'}); else document.getElementById('file-input').click();
+            document.getElementById('file-input').click();
         });
 
         document.getElementById('folder-btn').addEventListener('click', () => {
-            currentAction = 'upload-folder';
-            if (!accessToken) tokenClient.requestAccessToken({prompt: 'consent'}); else document.getElementById('folder-input').click();
+            document.getElementById('folder-input').click();
         });
 
-        // --- SINGLE FILE UPLOAD ---
-        document.getElementById('file-input').addEventListener('change', async (event) => {
-            const file = event.target.files[0];
-            if (!file) return;
-            uploadToGoogleDrive(file);
+        document.getElementById('new-folder-btn').addEventListener('click', () => {
+            const name = prompt('Enter new folder name:');
+            if (name && name.trim()) createFolder(name.trim());
         });
 
-        // --- FOLDER UPLOAD (Loops through all files inside) ---
-        document.getElementById('folder-input').addEventListener('change', async (event) => {
-            const files = event.target.files;
-            if (files.length === 0) return;
-            
-            alert(`Found ${files.length} files in the folder. Uploading them now...`);
-            
-            for (let i = 0; i < files.length; i++) {
-                await uploadToGoogleDrive(files[i], false); // Pass false to hide individual alerts
-            }
-            alert("Folder upload complete!");
-            fetchFilesFromDrive();
-        });
-
-        // The Reusable Upload Function
-        async function uploadToGoogleDrive(file, showAlerts = true) {
-            if(showAlerts) alert("Uploading: " + file.name + "... Please wait.");
-            const metadata = { 'name': file.name, 'mimeType': file.type };
-            const form = new FormData();
-            form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-            form.append('file', file);
-
+        // ── Init Drive ─────────────────────────────────────────────────────────
+        async function initDrive() {
+            fileArea.innerHTML = '<p style="color:#7a1f1f;font-weight:bold;">Locating Master Vault...</p>';
             try {
-                const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-                    method: 'POST',
-                    headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
-                    body: form
+                const q   = "name='Client Documents' and mimeType='application/vnd.google-apps.folder' and trashed=false";
+                const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}`, {
+                    headers: { 'Authorization': 'Bearer ' + accessToken }
                 });
-                if(response.ok && showAlerts) {
-                    alert("Success! The file is now in your Google Drive.");
-                    fetchFilesFromDrive(); 
-                }
-            } catch(e) { console.error("Upload failed", e); }
-        }
+                const data = await res.json();
 
-        // --- FETCH FILES & CREATE DELETE BUTTONS ---
-        async function fetchFilesFromDrive() {
-            const fileArea = document.getElementById('file-area');
-            fileArea.innerHTML = '<p style="color: #7a1f1f; font-weight: bold;">Syncing with secure vault...</p>';
-            try {
-                const response = await fetch('https://www.googleapis.com/drive/v3/files?fields=files(id,name,webContentLink)&q=trashed=false', {
-                    method: 'GET',
-                    headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
-                });
-                const data = await response.json();
-                
-                fileArea.innerHTML = ''; 
                 if (!data.files || data.files.length === 0) {
-                    fileArea.innerHTML = '<p style="color: #666;">The vault is empty.</p>';
+                    fileArea.innerHTML = '<p style="color:red;">Error: "Client Documents" folder not found in Drive.</p>';
                     return;
                 }
 
+                const rootId = data.files[0].id;
+                pathStack = [{ id: rootId, name: 'Client Documents' }];
+
+                document.getElementById('upload-btn').style.display    = 'inline-block';
+                document.getElementById('folder-btn').style.display    = 'inline-block';
+                document.getElementById('new-folder-btn').style.display = 'inline-block';
+                document.getElementById('view-btn').innerText = '🔄 Refresh';
+
+                fetchFilesFromDrive();
+            } catch (e) {
+                fileArea.innerHTML = '<p style="color:red;">Failed to connect to Drive.</p>';
+                console.error(e);
+            }
+        }
+
+        // ── Fetch & Render Files ───────────────────────────────────────────────
+        async function fetchFilesFromDrive() {
+            fileArea.innerHTML = '<p style="color:#7a1f1f;font-weight:bold;">Syncing with secure vault...</p>';
+            try {
+                const folder = currentFolder();
+                const q      = `'${folder.id}' in parents and trashed=false`;
+                const res    = await fetch(
+                    `https://www.googleapis.com/drive/v3/files?fields=files(id,name,mimeType,webContentLink)&q=${encodeURIComponent(q)}&orderBy=folder,name`,
+                    { headers: { 'Authorization': 'Bearer ' + accessToken } }
+                );
+                const data = await res.json();
+
+                fileArea.innerHTML = '';
+
+                // ── Top Bar ────────────────────────────────────────────────────
+                const topBar = document.createElement('div');
+                topBar.className = 'topbar';
+
+                // Back button (shown when not at root)
+                if (pathStack.length > 1) {
+                    const backBtn = document.createElement('button');
+                    backBtn.className = 'back-btn';
+                    backBtn.innerText = '⬅️ Go Back';
+                    backBtn.onclick = function () {
+                        backBtn.innerText = 'Loading...';
+                        backBtn.style.backgroundColor = '#666';
+                        pathStack.pop();
+                        fetchFilesFromDrive();
+                    };
+                    topBar.appendChild(backBtn);
+                }
+
+                // Breadcrumb
+                const breadcrumb = document.createElement('div');
+                breadcrumb.className = 'breadcrumb';
+                pathStack.forEach((crumb, idx) => {
+                    if (idx > 0) {
+                        const sep = document.createElement('span');
+                        sep.className = 'crumb-sep';
+                        sep.innerText = '›';
+                        breadcrumb.appendChild(sep);
+                    }
+                    const span = document.createElement('span');
+                    if (idx === pathStack.length - 1) {
+                        // Current folder — not clickable
+                        span.className = 'crumb-current';
+                        span.innerText = crumb.name;
+                    } else {
+                        // Ancestor — clickable to navigate up
+                        span.className = 'crumb-link';
+                        span.innerText = crumb.name;
+                        span.onclick = (function (targetIdx) {
+                            return function () {
+                                pathStack = pathStack.slice(0, targetIdx + 1);
+                                fetchFilesFromDrive();
+                            };
+                        })(idx);
+                    }
+                    breadcrumb.appendChild(span);
+                });
+                topBar.appendChild(breadcrumb);
+                fileArea.appendChild(topBar);
+
+                // ── File Count ─────────────────────────────────────────────────
+                const count = data.files ? data.files.length : 0;
+                const countDiv = document.createElement('div');
+                countDiv.className = 'file-count';
+                countDiv.innerText = `${count} item${count !== 1 ? 's' : ''} in this folder`;
+                fileArea.appendChild(countDiv);
+
+                if (count === 0) {
+                    const empty = document.createElement('p');
+                    empty.style.color = '#666';
+                    empty.textContent = 'This folder is empty.';
+                    fileArea.appendChild(empty);
+                    return;
+                }
+
+                // ── File Rows ──────────────────────────────────────────────────
                 data.files.forEach(file => {
                     const row = document.createElement('div');
                     row.className = 'file-row';
 
                     const nameSpan = document.createElement('span');
-                    nameSpan.className = 'file-name'; 
-                    nameSpan.innerText = "📄 " + file.name;
+                    nameSpan.className = 'file-name';
 
-                    // Action Group (Download + Delete)
-                    const actionsDiv = document.createElement('div');
-                    actionsDiv.className = 'file-actions';
+                    const actions = document.createElement('div');
+                    actions.className = 'file-actions';
 
-                    const downloadLink = document.createElement('a');
-                    downloadLink.className = 'download-link';
-                    downloadLink.innerText = "Download";
-                    downloadLink.href = file.webContentLink || "#";
-                    downloadLink.target = "_blank"; 
+                    if (file.mimeType === 'application/vnd.google-apps.folder') {
+                        nameSpan.classList.add('is-folder');
+                        nameSpan.innerText = '📁 ' + file.name;
 
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.className = 'delete-btn';
-                    deleteBtn.innerText = "Delete";
-                    
-                    // --- THE DELETE LOGIC ---
-                    deleteBtn.addEventListener('click', async () => {
-                        if(confirm(`Are you absolutely sure you want to delete "${file.name}"?`)) {
-                            currentAction = 'delete';
-                            if (!accessToken) {
-                                tokenClient.requestAccessToken({prompt: 'consent'});
-                                return;
-                            }
-                            try {
-                                const delResponse = await fetch('https://www.googleapis.com/drive/v3/files/' + file.id, {
-                                    method: 'DELETE',
-                                    headers: new Headers({ 'Authorization': 'Bearer ' + accessToken })
-                                });
-                                if(delResponse.ok) {
-                                    alert("File deleted.");
-                                    fetchFilesFromDrive(); // Refresh list
-                                }
-                            } catch(e) { alert("Delete failed."); }
-                        }
-                    });
+                        const openBtn = document.createElement('button');
+                        openBtn.className = 'btn-open';
+                        openBtn.innerText = 'Open';
+                        openBtn.onclick = function () {
+                            openBtn.innerText = 'Opening...';
+                            pathStack.push({ id: file.id, name: file.name });
+                            fetchFilesFromDrive();
+                        };
+                        actions.appendChild(openBtn);
+                    } else {
+                        nameSpan.innerText = '📄 ' + file.name;
 
-                    actionsDiv.appendChild(downloadLink);
-                    actionsDiv.appendChild(deleteBtn);
-                    
+                        const dlLink = document.createElement('a');
+                        dlLink.className = 'btn-download';
+                        dlLink.innerText = 'Download';
+                        dlLink.href     = file.webContentLink || '#';
+                        dlLink.target   = '_blank';
+                        actions.appendChild(dlLink);
+                    }
+
+                    // Delete button — admin only
+                    const delBtn = document.createElement('button');
+                    delBtn.className = 'btn-delete';
+                    delBtn.innerText = 'Delete';
+                    delBtn.onclick = () => deleteItem(file.id, file.name);
+                    actions.appendChild(delBtn);
+
                     row.appendChild(nameSpan);
-                    row.appendChild(actionsDiv);
+                    row.appendChild(actions);
                     fileArea.appendChild(row);
                 });
-            } catch (error) { fileArea.innerHTML = '<p style="color: red;">Failed to load files.</p>'; }
+
+            } catch (error) {
+                fileArea.innerHTML = '<p style="color:red;">Failed to load files. Please try again.</p>';
+                console.error(error);
+            }
         }
 
-        // Live Search System
-        document.getElementById('search-input').addEventListener('input', function(event) {
-            const searchTerm = event.target.value.toLowerCase(); 
+        // ── Delete File / Folder ───────────────────────────────────────────────
+        async function deleteItem(fileId, fileName) {
+            if (!confirm(`Permanently delete "${fileName}"?\n\nThis cannot be undone.`)) return;
+            try {
+                const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + accessToken }
+                });
+                if (res.ok) {
+                    fetchFilesFromDrive();
+                } else {
+                    alert('Delete failed. Please try again.');
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        // ── Create New Folder ──────────────────────────────────────────────────
+        async function createFolder(name) {
+            try {
+                const res = await fetch('https://www.googleapis.com/drive/v3/files', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + accessToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        mimeType: 'application/vnd.google-apps.folder',
+                        parents: [currentFolder().id]
+                    })
+                });
+                if (res.ok) {
+                    fetchFilesFromDrive();
+                } else {
+                    alert('Failed to create folder.');
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        // ── Single File Upload ─────────────────────────────────────────────────
+        document.getElementById('file-input').addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            alert(`Uploading "${file.name}" to "${currentFolder().name}"...`);
+            await uploadFile(file, currentFolder().id, true);
+            event.target.value = '';
+        });
+
+        // ── Folder Upload (all files inside) ──────────────────────────────────
+        document.getElementById('folder-input').addEventListener('change', async (event) => {
+            const files = event.target.files;
+            if (!files.length) return;
+            alert(`Uploading ${files.length} file(s) to "${currentFolder().name}"...`);
+            for (let i = 0; i < files.length; i++) {
+                await uploadFile(files[i], currentFolder().id, false);
+            }
+            alert('Folder upload complete!');
+            fetchFilesFromDrive();
+            event.target.value = '';
+        });
+
+        async function uploadFile(file, parentId, showAlert) {
+            const metadata = { name: file.name, mimeType: file.type, parents: [parentId] };
+            const form = new FormData();
+            form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+            form.append('file', file);
+            try {
+                const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + accessToken },
+                    body: form
+                });
+                if (res.ok && showAlert) {
+                    alert(`"${file.name}" uploaded successfully!`);
+                    fetchFilesFromDrive();
+                }
+            } catch (e) {
+                console.error('Upload failed:', e);
+            }
+        }
+
+        // ── Live Search (filters visible rows in current folder) ───────────────
+        document.getElementById('search-input').addEventListener('input', function (e) {
+            const term = e.target.value.toLowerCase();
             document.querySelectorAll('.file-row').forEach(row => {
-                const fileName = row.querySelector('.file-name').innerText.toLowerCase(); 
-                row.style.display = fileName.includes(searchTerm) ? 'flex' : 'none';
+                const name = row.querySelector('.file-name').innerText.toLowerCase();
+                row.style.display = name.includes(term) ? 'flex' : 'none';
             });
         });
     </script>
+
     <script type="module">
-        // 1. Import Firebase tools for logging out
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-        // 2. !!! PASTE YOUR FIREBASE CONFIG HERE !!!
         const firebaseConfig = {
             apiKey: "AIzaSyCb_VeOkx-sAAoBodr6gSZisAVNC_N5NVs",
-            authDomain: "your-app.firebaseapp.com",
+            authDomain: "office-dms.firebaseapp.com",
             projectId: "office-dms",
             storageBucket: "your-project-id.appspot.com",
             messagingSenderId: "123456789",
             appId: "1:123456789:web:abcdef"
         };
 
-        const app = initializeApp(firebaseConfig);
+        const app  = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // 3. Make the button work
         document.getElementById('logout-btn').addEventListener('click', () => {
             signOut(auth).then(() => {
-                // When successful, send them back to the login screen!
-                window.location.href = "index.html";
-            }).catch((error) => {
-                alert("Error logging out: " + error.message);
+                window.location.href = 'index.html';
+            }).catch(error => {
+                alert('Error logging out: ' + error.message);
             });
         });
     </script>
