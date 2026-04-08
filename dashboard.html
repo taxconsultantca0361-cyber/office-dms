@@ -90,7 +90,7 @@
         // --- BUTTON LISTENERS ---
         document.getElementById('view-btn').addEventListener('click', () => {
             currentAction = 'view';
-            if (!accessToken) tokenClient.requestAccessToken({prompt: 'consent'}); 
+            if (!accessToken) tokenClient.requestAccessToken({prompt: 'select_account'}); 
             else { loadClients(); fetchFilesFromDrive(); }
         });
 
@@ -98,7 +98,7 @@
             if (!accessToken) {
                 currentAction = 'connect';
                 alert("Connecting to Vault... Please pick your folders and click Upload again.");
-                tokenClient.requestAccessToken({prompt: 'consent'});
+                tokenClient.requestAccessToken({prompt: 'select_account'});
                 return;
             }
             
