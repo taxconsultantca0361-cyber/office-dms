@@ -10,7 +10,7 @@
         .sidebar h3 { margin-top: 0; border-bottom: 1px solid #455666; padding-bottom: 10px; }
         .search-box { width: 100%; padding: 10px; margin-top: 15px; border-radius: 5px; border: none; box-sizing: border-box; font-size: 14px; }
         .main-content { flex-grow: 1; padding: 30px; box-sizing: border-box; overflow-y: auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 2px solid #ddd; padding-bottom: 20px; }
         .btn-group { display: flex; gap: 10px; }
         .action-btn { padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; border: none; color: white; }
         .upload-btn { background-color: #27ae60; }
@@ -20,41 +20,30 @@
         .file-area { background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); min-height: 300px; }
         .file-row { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; align-items: center; }
         .file-row:hover { background-color: #f9f9f9; }
-        .download-link { color: #0056b3; text-decoration: none; font-weight: bold; padding: 5px 15px; border: 1px solid #0056b3; border-radius: 4px; }
+        .download-link { color: #0056b3; text-decoration: none; font-weight: bold; padding: 5px 15px; border: 1px solid #0056b3; border-radius: 4px; cursor: pointer; }
         .download-link:hover { background-color: #0056b3; color: white; }
+        .folder-btn { background-color: #e8f4fd; border: 1px solid #0056b3; }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
         <h3>Client List</h3>
-        <input type="text" id="search-input" class="search-box" placeholder="Search for a file or client...">
+        <input type="text" id="search-input" class="search-box" placeholder="Search for a file...">
         <button id="logout-btn" style="width: 100%; padding: 10px; margin-top: 20px; background-color: #34495e; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🚪 Log Out</button>
     </div>
 
     <div class="main-content">
-        <div class="header" style="flex-direction: column; align-items: flex-start; gap: 15px;">
+        <div class="header">
             <h2>Document Center</h2>
-            
-            <div style="background: #e8f4fd; padding: 15px; border-radius: 8px; width: 100%; box-sizing: border-box; display: flex; gap: 10px; align-items: center;">
-                <select id="client-select" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; flex-grow: 1;">
-                    <option value="">1. Click 'Connect' below to load Clients...</option>
-                </select>
-                
-                <select id="subfolder-select" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; flex-grow: 1;">
-                    <option value="">2. Waiting for Client...</option>
-                </select>
-                
-                <button class="action-btn upload-btn" id="upload-btn">3. Upload File Here</button>
-            </div>
-
-            <div class="btn-group" style="margin-top: 10px;">
-                <button class="action-btn view-btn" id="view-btn">Connect & View Files</button>
+            <div class="btn-group">
+                <button class="action-btn view-btn" id="connect-btn">1. Connect to Vault</button>
+                <button class="action-btn upload-btn" id="upload-btn" style="display: none;">2. + Upload File Here</button>
             </div>
         </div>
 
         <div class="file-area" id="file-area">
-            <p style="color: #666;">Click "Connect & View Files" to load your documents from Google Drive.</p>
+            <p style="color: #666;">Click "Connect to Vault" to open your folders.</p>
         </div>
     </div>
 
@@ -67,8 +56,12 @@
         
         let tokenClient;
         let accessToken = null;
-        let currentAction = null; 
+        
+        // --- THE FILE EXPLORER BRAIN ---
         let rootFolderId = null;
+        let currentFolderId = null;
+        let currentFolderName = "Master Vault";
+        let folderHistory = []; // Remembers the path so the Back button works!
 
         const fileArea = document.getElementById('file-area');
         const searchInput = document.getElementById('search-input');
@@ -76,106 +69,178 @@
         window.onload = function() {
             tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: CLIENT_ID,
-                scope: 'https://www.googleapis.com/auth/drive',
+                scope: 'https://www.googleapis.com/auth/drive', // FULL ACCESS BADGE
                 callback: (tokenResponse) => {
                     accessToken = tokenResponse.access_token;
-                    loadClients(); 
-                    if (currentAction === 'view') fetchFilesFromDrive();
+                    initDrive(); 
                 },
             });
         };
 
         // --- BUTTON LISTENERS ---
-        document.getElementById('view-btn').addEventListener('click', () => {
-            currentAction = 'view';
+        document.getElementById('connect-btn').addEventListener('click', () => {
             if (!accessToken) tokenClient.requestAccessToken({prompt: 'select_account'}); 
-            else { loadClients(); fetchFilesFromDrive(); }
+            else fetchFilesFromDrive(); // Just refresh if already connected
         });
 
         document.getElementById('upload-btn').addEventListener('click', () => {
-            if (!accessToken) {
-                currentAction = 'connect';
-                alert("Connecting to Vault... Please pick your folders and click Upload again.");
-                tokenClient.requestAccessToken({prompt: 'select_account'});
-                return;
-            }
-            
-            const subfolderId = document.getElementById('subfolder-select').value;
-            if(!subfolderId) {
-                alert("STOP: You must select a Client and a Folder before uploading!");
-                return;
-            }
             document.getElementById('file-input').click();
         });
 
-        // --- THE DROPDOWN ENGINE ---
-        async function loadClients() {
-            const clientSelect = document.getElementById('client-select');
-            clientSelect.innerHTML = '<option value="">Loading Clients...</option>';
-
+        // --- LOCATE THE MASTER VAULT ---
+        async function initDrive() {
+            fileArea.innerHTML = '<p style="color: #0056b3; font-weight: bold;">Locating Master Vault...</p>';
             try {
                 let query = "name='Client Documents' and mimeType='application/vnd.google-apps.folder' and trashed=false";
                 let res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}`, { headers: { 'Authorization': 'Bearer ' + accessToken }});
                 let data = await res.json();
 
                 if (!data.files || data.files.length === 0) {
-                    clientSelect.innerHTML = '<option value="">Error: Admin must create "Client Documents" folder.</option>';
+                    fileArea.innerHTML = '<p style="color: red;">Error: "Client Documents" folder not found.</p>';
                     return;
                 }
+                
+                // Set the starting point
                 rootFolderId = data.files[0].id;
+                currentFolderId = rootFolderId;
+                currentFolderName = "Client Documents";
+                folderHistory = []; 
 
-                let clientQuery = `'${rootFolderId}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`;
-                let clientRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(clientQuery)}`, { headers: { 'Authorization': 'Bearer ' + accessToken }});
-                let clientData = await clientRes.json();
+                // Show the Upload Button and change Connect to Refresh
+                document.getElementById('upload-btn').style.display = 'block';
+                document.getElementById('connect-btn').innerText = "Refresh View";
 
-                clientSelect.innerHTML = '<option value="">1. Select a Client...</option>';
-                clientData.files.forEach(folder => {
-                    let opt = document.createElement('option');
-                    opt.value = folder.id; 
-                    opt.innerText = "📁 " + folder.name;
-                    clientSelect.appendChild(opt);
-                });
+                // Load the files!
+                fetchFilesFromDrive();
             } catch(e) { console.error(e); }
         }
 
-        // --- LOAD SUBFOLDERS ---
-        document.getElementById('client-select').addEventListener('change', async (e) => {
-            const subfolderSelect = document.getElementById('subfolder-select');
-            const clientId = e.target.value;
-            
-            if(!clientId) {
-                subfolderSelect.innerHTML = '<option value="">2. Waiting for Client...</option>';
-                return;
-            }
-            subfolderSelect.innerHTML = '<option value="">Loading Folders...</option>';
-            
+        // --- THE NEW FILE EXPLORER SYSTEM ---
+        async function fetchFilesFromDrive() {
+            fileArea.innerHTML = '<p style="color: #0056b3; font-weight: bold;">Loading contents...</p>';
             try {
-                let subQuery = `'${clientId}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`;
-                let subRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(subQuery)}`, { headers: { 'Authorization': 'Bearer ' + accessToken }});
-                let subData = await subRes.json();
-
-                subfolderSelect.innerHTML = '<option value="">2. Select a Folder...</option>';
-                subData.files.forEach(folder => {
-                    let opt = document.createElement('option');
-                    opt.value = folder.id;
-                    opt.innerText = "📂 " + folder.name;
-                    subfolderSelect.appendChild(opt);
+                // Notice this query! It ONLY looks inside the current folder you clicked on.
+                let query = `'${currentFolderId}' in parents and trashed=false`;
+                const response = await fetch(`https://www.googleapis.com/drive/v3/files?fields=files(id,name,mimeType,webContentLink)&q=${encodeURIComponent(query)}`, {
+                    method: 'GET',
+                    headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
                 });
-            } catch(e) { console.error(e); }
-        });
+                const data = await response.json();
+                
+                fileArea.innerHTML = ''; 
 
-        // --- STRICT UPLOAD LOGIC ---
+                // --- 1. BUILD THE TOP BAR & BACK BUTTON ---
+                const topBar = document.createElement('div');
+                topBar.style.paddingBottom = "15px";
+                topBar.style.marginBottom = "15px";
+                topBar.style.borderBottom = "1px solid #ccc";
+                topBar.style.display = "flex";
+                topBar.style.alignItems = "center";
+                topBar.style.gap = "15px";
+
+                // Only show Back button if we are deep in a folder
+                if (folderHistory.length > 0) {
+                    const backBtn = document.createElement('button');
+                    backBtn.innerText = "⬅️ Back";
+                    backBtn.className = "action-btn view-btn";
+                    backBtn.style.padding = "5px 15px";
+                    backBtn.addEventListener('click', () => {
+                        const previousFolder = folderHistory.pop();
+                        currentFolderId = previousFolder.id;
+                        currentFolderName = previousFolder.name;
+                        fetchFilesFromDrive();
+                    });
+                    topBar.appendChild(backBtn);
+                }
+
+                const pathText = document.createElement('strong');
+                pathText.style.fontSize = "18px";
+                pathText.innerText = "📂 " + currentFolderName;
+                topBar.appendChild(pathText);
+                fileArea.appendChild(topBar);
+
+                // --- 2. DISPLAY FILES AND FOLDERS ---
+                if (!data.files || data.files.length === 0) {
+                    fileArea.innerHTML += '<p style="color: #666;">This folder is empty.</p>';
+                    return;
+                }
+
+                // Sort: Put Folders at the top, Files at the bottom
+                data.files.sort((a, b) => {
+                    if (a.mimeType === 'application/vnd.google-apps.folder' && b.mimeType !== 'application/vnd.google-apps.folder') return -1;
+                    if (a.mimeType !== 'application/vnd.google-apps.folder' && b.mimeType === 'application/vnd.google-apps.folder') return 1;
+                    return a.name.localeCompare(b.name);
+                });
+
+                data.files.forEach(file => {
+                    const row = document.createElement('div');
+                    row.className = 'file-row'; 
+
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'file-name'; 
+
+                    // IF IT IS A FOLDER
+                    if (file.mimeType === 'application/vnd.google-apps.folder') {
+                        nameSpan.innerText = "📁 " + file.name;
+                        nameSpan.style.fontWeight = "bold";
+
+                        const openBtn = document.createElement('button');
+                        openBtn.className = 'download-link folder-btn';
+                        openBtn.innerText = "Open Folder";
+                        openBtn.addEventListener('click', () => {
+                            // Remember where we are, then jump inside!
+                            folderHistory.push({id: currentFolderId, name: currentFolderName});
+                            currentFolderId = file.id;
+                            currentFolderName = file.name;
+                            fetchFilesFromDrive();
+                        });
+
+                        row.appendChild(nameSpan);
+                        row.appendChild(openBtn);
+                    } 
+                    // IF IT IS A REGULAR FILE
+                    else {
+                        nameSpan.innerText = "📄 " + file.name;
+
+                        const downloadLink = document.createElement('a');
+                        downloadLink.className = 'download-link';
+                        downloadLink.innerText = "Download";
+                        
+                        if (file.webContentLink) {
+                            downloadLink.href = file.webContentLink;
+                            downloadLink.target = "_blank"; 
+                        } else {
+                            downloadLink.href = "#";
+                            downloadLink.innerText = "Processing...";
+                        }
+                        
+                        row.appendChild(nameSpan);
+                        row.appendChild(downloadLink);
+                    }
+                    
+                    fileArea.appendChild(row);
+                });
+            } catch (error) { fileArea.innerHTML = '<p style="color: red;">Failed to load files.</p>'; }
+        }
+
+        // --- SMART UPLOAD LOGIC ---
         document.getElementById('file-input').addEventListener('change', async (event) => {
             const file = event.target.files[0];
             if (!file) return;
 
-            const finalFolderId = document.getElementById('subfolder-select').value;
-            alert("Locking file into selected folder... Please wait.");
+            // Warn them if they try to upload directly to the Master Vault instead of a client folder
+            if (currentFolderId === rootFolderId) {
+                if(!confirm("You are uploading to the main Master Vault. Do you want to open a Client Folder first? Click OK to upload anyway.")) {
+                    return;
+                }
+            }
+
+            alert(`Locking file into "${currentFolderName}"... Please wait.`);
 
             const metadata = { 
                 'name': file.name, 
                 'mimeType': file.type,
-                'parents': [finalFolderId] 
+                'parents': [currentFolderId] // Drops the file exactly where you are currently looking!
             };
             const form = new FormData();
             form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
@@ -188,56 +253,11 @@
                     body: form
                 });
                 if(response.ok) {
-                    alert("Success! File uploaded safely.");
-                    fetchFilesFromDrive(); 
+                    alert("Success! File uploaded.");
+                    fetchFilesFromDrive(); // Refresh to show the new file
                 } else alert("Upload failed.");
             } catch(e) { alert("Error: " + e.message); }
         });
-
-        // --- FETCH FILES LOGIC (THIS WAS THE MISSING PIECE!) ---
-        async function fetchFilesFromDrive() {
-            fileArea.innerHTML = '<p style="color: #0056b3; font-weight: bold;">Loading your files from Google Drive...</p>';
-            try {
-                const response = await fetch('https://www.googleapis.com/drive/v3/files?fields=files(id,name,webContentLink)&q=trashed=false', {
-                    method: 'GET',
-                    headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
-                });
-                const data = await response.json();
-                const files = data.files;
-                
-                fileArea.innerHTML = ''; 
-
-                if (!files || files.length === 0) {
-                    fileArea.innerHTML = '<p style="color: #666;">Your Document Center is empty. Upload a file to get started!</p>';
-                    return;
-                }
-
-                files.forEach(file => {
-                    const row = document.createElement('div');
-                    row.className = 'file-row'; 
-
-                    const nameSpan = document.createElement('span');
-                    nameSpan.className = 'file-name'; 
-                    nameSpan.innerText = "📄 " + file.name;
-
-                    const downloadLink = document.createElement('a');
-                    downloadLink.className = 'download-link';
-                    downloadLink.innerText = "Download";
-                    
-                    if (file.webContentLink) {
-                        downloadLink.href = file.webContentLink;
-                        downloadLink.target = "_blank"; 
-                    } else {
-                        downloadLink.href = "#";
-                        downloadLink.innerText = "Processing...";
-                    }
-                    
-                    row.appendChild(nameSpan);
-                    row.appendChild(downloadLink);
-                    fileArea.appendChild(row);
-                });
-            } catch (error) { fileArea.innerHTML = '<p style="color: red;">Failed to load files: ' + error.message + '</p>'; }
-        }
 
         // --- SEARCH SYSTEM ---
         searchInput.addEventListener('input', function(event) {
@@ -246,11 +266,7 @@
 
             allFiles.forEach(row => {
                 const fileName = row.querySelector('.file-name').innerText.toLowerCase(); 
-                if (fileName.includes(searchTerm)) {
-                    row.style.display = 'flex';
-                } else {
-                    row.style.display = 'none';
-                }
+                row.style.display = fileName.includes(searchTerm) ? 'flex' : 'none';
             });
         });
     </script>
@@ -260,7 +276,7 @@
 
         const firebaseConfig = {
             apiKey: "AIzaSyCb_VeOkx-sAAoBodr6gSZisAVNC_N5NVs",
-            authDomain: "your-app.firebaseapp.com",
+            authDomain: "office-dms.firebaseapp.com", // Fixed domain!
             projectId: "office-dms",
             storageBucket: "your-project-id.appspot.com",
             messagingSenderId: "123456789",
