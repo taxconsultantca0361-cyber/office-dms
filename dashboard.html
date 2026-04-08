@@ -157,7 +157,10 @@
                 fileArea.appendChild(topBar);
 
                 if (!data.files || data.files.length === 0) {
-                    fileArea.innerHTML += '<p style="color: #666;">This folder is empty.</p>';
+                    const emptyMsg = document.createElement('p');
+                    emptyMsg.style.color = '#666';
+                    emptyMsg.textContent = 'This folder is empty.';
+                    fileArea.appendChild(emptyMsg);
                     return;
                 }
 
