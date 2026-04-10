@@ -35,7 +35,7 @@
         .view-btn   { background-color: #0056b3; } .view-btn:hover   { background-color: #004494; }
 
         /* ── Search Bar (centred, shown when folder opens) ──────────────────── */
-        .search-container { display: none; text-align: center; }
+        .search-container { display: none; justify-content: center; }
         .main-search-box { width: 100%; max-width: 480px; padding: 10px 18px; border-radius: 24px; border: 2px solid #0056b3; font-size: 14px; outline: none; transition: box-shadow 0.2s; }
         .main-search-box:focus { box-shadow: 0 0 0 3px rgba(0,86,179,0.18); }
 
@@ -83,13 +83,13 @@
     <div class="mobile-nav" id="mobile-nav">
         <button class="hamburger-btn" id="hamburger-btn">☰</button>
         <span class="mobile-title">📁 Document Center</span>
-        <button class="mobile-logout-btn" id="mobile-logout-btn">🚪 Logout</button>
+        <button class="mobile-logout-btn" onclick="window.location.href='index.html'">🚪 Logout</button>
     </div>
 
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <h3>📁 Client List</h3>
-        <button class="logout-btn" id="logout-btn" style="margin-top: 20px;">🚪 Log Out</button>
+        <button class="logout-btn" onclick="window.location.href='index.html'" style="margin-top: 20px;">🚪 Log Out</button>
     </div>
 
     <!-- Main Content -->
@@ -175,7 +175,7 @@
                 folderHistory     = [];
 
                 document.getElementById('upload-btn').style.display      = 'inline-block';
-                document.getElementById('search-container').style.display = 'block';
+                document.getElementById('search-container').style.display = 'flex';
                 document.getElementById('connect-btn').innerText          = '🔄 Refresh';
                 fetchFilesFromDrive();
             } catch (e) { console.error(e); }

@@ -45,7 +45,7 @@
         .btn-newfolder { background-color: #7d3c98; } .btn-newfolder:hover { background-color: #6c3483; }
 
         /* ── Search Bar (centred in main area) ──────────────────────────────── */
-        .search-container { display: none; text-align: center; }
+        .search-container { display: none; justify-content: center; }
         .main-search-box { width: 100%; max-width: 480px; padding: 10px 18px; border-radius: 24px; border: 2px solid #7a1f1f; font-size: 14px; outline: none; transition: box-shadow 0.2s; }
         .main-search-box:focus { box-shadow: 0 0 0 3px rgba(122,31,31,0.18); }
 
@@ -118,7 +118,7 @@
     <div class="mobile-nav" id="mobile-nav">
         <button class="hamburger-btn" id="hamburger-btn">☰</button>
         <span class="mobile-title">⚙️ Admin Console</span>
-        <button class="mobile-logout-btn" id="mobile-logout-btn">🚪 Logout</button>
+        <button class="mobile-logout-btn" onclick="window.location.href='index.html'">🚪 Logout</button>
     </div>
 
     <!-- Sidebar -->
@@ -139,7 +139,7 @@
             <div>🗑️ Delete any file or folder</div>
         </div>
 
-        <button class="logout-btn" id="logout-btn">🚪 Log Out</button>
+        <button class="logout-btn" onclick="window.location.href='index.html'">🚪 Log Out</button>
     </div>
 
     <!-- Main Content -->
@@ -275,7 +275,7 @@
                 document.getElementById('upload-btn').style.display     = 'inline-block';
                 document.getElementById('folder-btn').style.display     = 'inline-block';
                 document.getElementById('new-folder-btn').style.display = 'inline-block';
-                document.getElementById('search-container').style.display = 'block';
+                document.getElementById('search-container').style.display = 'flex';
                 document.getElementById('view-btn').innerText = '🔄 Refresh';
                 fetchFilesFromDrive();
             } catch (e) {
@@ -390,7 +390,7 @@
                         const shareBtn = document.createElement('button');
                         shareBtn.className = 'btn-share';
                         shareBtn.innerText  = '📤 Share';
-                        shareBtn.onclick    = () => shareFileDirect(file.id, file.name, file.webViewLink);
+                        shareBtn.onclick    = function() { shareFileDirect(file.id, file.name, file.webViewLink, this); };
                         actions.appendChild(shareBtn);
                     }
 
@@ -414,8 +414,7 @@
         // ── Share File Directly ────────────────────────────────────────────────
         // On mobile: uses Web Share API to send the actual file.
         // On desktop / fallback: shows a copy-link modal.
-        async function shareFileDirect(fileId, fileName, existingViewLink) {
-            const shareBtn = event.target;
+        async function shareFileDirect(fileId, fileName, existingViewLink, shareBtn) {
             const origText = shareBtn.innerText;
             shareBtn.innerText = '⏳ Preparing...';
             shareBtn.disabled  = true;
