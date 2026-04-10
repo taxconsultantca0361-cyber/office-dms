@@ -8,71 +8,61 @@
         * { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background-color: #f4f7f6; display: flex; min-height: 100vh; }
 
-        /* ── Sidebar ──────────────────────────────────────────────── */
-        .sidebar {
-            width: 260px; min-width: 260px; background-color: #7a1f1f; color: white;
-            padding: 20px; display: flex; flex-direction: column; gap: 0;
-            transition: transform 0.3s ease; z-index: 200;
-        }
-        .sidebar h3 { margin-top: 0; border-bottom: 1px solid #9c3636; padding-bottom: 10px; font-size: 16px; }
+        /* ── Sidebar ───────────────────────────────────────────────────────── */
+        .sidebar { width: 240px; min-width: 240px; background-color: #7a1f1f; color: white; padding: 20px; display: flex; flex-direction: column; transition: transform 0.3s ease; z-index: 200; }
+        .sidebar h3 { margin-top: 0; border-bottom: 1px solid #9c3636; padding-bottom: 10px; font-size: 15px; }
         .sidebar-badge { font-size: 12px; color: #ffbaba; margin-top: -8px; margin-bottom: 14px; }
-        .search-box { width: 100%; padding: 10px; border-radius: 5px; border: none; font-size: 14px; }
-        .sidebar-info { margin-top: 18px; font-size: 12px; color: #ffbaba; line-height: 2; }
+        .sidebar-info { margin-top: 14px; font-size: 12px; color: #ffbaba; line-height: 2; }
 
-        /* Storage widget */
-        #storage-widget { margin-top: 18px; font-size: 12px; color: #ffbaba; }
-        #storage-widget .storage-bar-bg { background: #9c3636; border-radius: 4px; height: 7px; margin-top: 6px; overflow: hidden; }
-        #storage-widget .storage-bar-fill { background: #ffbaba; height: 100%; border-radius: 4px; transition: width 0.4s; }
+        #storage-widget { margin-top: 16px; font-size: 12px; color: #ffbaba; }
+        .storage-bar-bg { background: #9c3636; border-radius: 4px; height: 7px; margin-top: 6px; overflow: hidden; }
+        .storage-bar-fill { background: #ffbaba; height: 100%; border-radius: 4px; transition: width 0.5s; }
 
         .logout-btn { width: 100%; padding: 11px; margin-top: auto; background-color: #34495e; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px; }
         .logout-btn:hover { background-color: #2c3e50; }
 
-        /* ── Mobile Top Nav ───────────────────────────────────────── */
-        .mobile-nav {
-            display: none; position: sticky; top: 0; z-index: 100;
-            background-color: #7a1f1f; color: white;
-            padding: 12px 16px; align-items: center; gap: 12px;
-        }
-        .hamburger-btn {
-            background: none; border: none; color: white; font-size: 24px;
-            cursor: pointer; padding: 0 4px; line-height: 1;
-        }
-        .mobile-title { font-weight: bold; font-size: 15px; }
+        /* ── Mobile Top Nav ─────────────────────────────────────────────────── */
+        .mobile-nav { display: none; position: sticky; top: 0; z-index: 100; background-color: #7a1f1f; color: white; padding: 11px 14px; align-items: center; gap: 10px; }
+        .hamburger-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 0 4px; line-height: 1; flex-shrink: 0; }
+        .mobile-title { font-weight: bold; font-size: 14px; flex: 1; }
+        .mobile-logout-btn { margin-left: auto; background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 13px; font-weight: bold; flex-shrink: 0; }
+        .mobile-logout-btn:hover { background: rgba(255,255,255,0.28); }
 
-        /* Overlay behind sidebar on mobile */
-        .sidebar-overlay {
-            display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,0.45); z-index: 199;
-        }
+        .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 199; }
         .sidebar-overlay.active { display: block; }
 
-        /* ── Main Content ─────────────────────────────────────────── */
-        .main-content { flex-grow: 1; padding: 28px; overflow-y: auto; min-width: 0; display: flex; flex-direction: column; }
-        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 2px solid #7a1f1f; padding-bottom: 12px; flex-wrap: wrap; gap: 10px; }
-        .header h2 { margin: 0; color: #7a1f1f; font-size: clamp(16px, 3vw, 22px); }
+        /* ── Main Content ───────────────────────────────────────────────────── */
+        .main-content { flex-grow: 1; padding: 24px; overflow-y: auto; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #7a1f1f; padding-bottom: 12px; flex-wrap: wrap; gap: 10px; }
+        .header h2 { margin: 0; color: #7a1f1f; font-size: clamp(15px, 3vw, 21px); }
 
-        /* ── Action Buttons ───────────────────────────────────────── */
-        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
-        .action-btn { padding: 9px 13px; border-radius: 5px; font-weight: bold; cursor: pointer; border: none; color: white; font-size: 13px; white-space: nowrap; }
+        /* ── Toolbar Buttons ────────────────────────────────────────────────── */
+        .btn-group { display: flex; gap: 7px; flex-wrap: wrap; }
+        .action-btn { padding: 8px 12px; border-radius: 5px; font-weight: bold; cursor: pointer; border: none; color: white; font-size: 13px; white-space: nowrap; }
         .btn-view      { background-color: #0056b3; } .btn-view:hover      { background-color: #004494; }
         .btn-upload    { background-color: #27ae60; } .btn-upload:hover    { background-color: #1e8449; }
         .btn-folder    { background-color: #d35400; } .btn-folder:hover    { background-color: #b84500; }
         .btn-newfolder { background-color: #7d3c98; } .btn-newfolder:hover { background-color: #6c3483; }
 
-        /* ── File Area ────────────────────────────────────────────── */
-        .file-area { background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); min-height: 300px; }
+        /* ── Search Bar (centred in main area) ──────────────────────────────── */
+        .search-container { display: none; text-align: center; }
+        .main-search-box { width: 100%; max-width: 480px; padding: 10px 18px; border-radius: 24px; border: 2px solid #7a1f1f; font-size: 14px; outline: none; transition: box-shadow 0.2s; }
+        .main-search-box:focus { box-shadow: 0 0 0 3px rgba(122,31,31,0.18); }
+
+        /* ── File Area ──────────────────────────────────────────────────────── */
+        .file-area { background-color: white; padding: 18px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); min-height: 260px; }
 
         .topbar { display: flex; align-items: center; gap: 10px; padding-bottom: 12px; margin-bottom: 8px; border-bottom: 1px solid #ddd; flex-wrap: wrap; }
-        .back-btn { padding: 6px 14px; background-color: #0056b3; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; white-space: nowrap; }
+        .back-btn { padding: 6px 13px; background-color: #0056b3; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; white-space: nowrap; }
         .back-btn:hover { background-color: #004494; }
 
         .breadcrumb { font-size: 13px; color: #555; display: flex; align-items: center; flex-wrap: wrap; gap: 2px; }
         .crumb-link    { color: #0056b3; cursor: pointer; padding: 2px 4px; border-radius: 3px; }
         .crumb-link:hover { background-color: #e8f4fd; text-decoration: underline; }
-        .crumb-sep     { color: #bbb; margin: 0 1px; }
+        .crumb-sep     { color: #bbb; }
         .crumb-current { color: #333; font-weight: bold; padding: 2px 4px; }
 
-        .file-count { font-size: 12px; color: #999; margin-bottom: 12px; }
+        .file-count { font-size: 12px; color: #999; margin-bottom: 10px; }
 
         .file-row { display: flex; justify-content: space-between; align-items: center; padding: 11px 8px; border-bottom: 1px solid #eee; gap: 8px; }
         .file-row:last-child { border-bottom: none; }
@@ -80,7 +70,7 @@
         .file-name { font-size: 14px; flex: 1; word-break: break-word; min-width: 0; }
         .file-name.is-folder { font-weight: bold; }
 
-        .file-actions { display: flex; gap: 7px; align-items: center; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+        .file-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
         .btn-open     { background-color: #e8f4fd; border: 1px solid #0056b3; color: #0056b3; padding: 6px 11px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; }
         .btn-open:hover { background-color: #0056b3; color: white; }
         .btn-download { color: #0056b3; text-decoration: none; font-weight: bold; padding: 6px 11px; border: 1px solid #0056b3; border-radius: 4px; font-size: 13px; display: inline-block; }
@@ -90,61 +80,51 @@
         .btn-delete   { background-color: #c0392b; color: white; border: none; padding: 6px 11px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; }
         .btn-delete:hover { background-color: #922b21; }
 
-        /* ── Share Modal ──────────────────────────────────────────── */
-        .modal-overlay {
-            display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,0.5); z-index: 300;
-            justify-content: center; align-items: center; padding: 16px;
-        }
+        /* ── Share Modal ────────────────────────────────────────────────────── */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 300; justify-content: center; align-items: center; padding: 16px; }
         .modal-overlay.active { display: flex; }
-        .modal-box { background: white; border-radius: 10px; padding: 24px; width: 100%; max-width: 420px; box-shadow: 0 6px 24px rgba(0,0,0,0.25); }
+        .modal-box { background: white; border-radius: 10px; padding: 24px; width: 100%; max-width: 400px; box-shadow: 0 6px 24px rgba(0,0,0,0.25); }
         .modal-box h3 { margin-top: 0; color: #333; }
         .modal-file-name { color: #666; font-size: 13px; margin-bottom: 14px; word-break: break-word; }
-        .modal-link-input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 13px; margin-bottom: 14px; color: #333; background: #f9f9f9; }
+        .modal-link-input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 13px; margin-bottom: 14px; background: #f9f9f9; }
         .modal-actions { display: flex; gap: 10px; }
-        .btn-copy-link  { flex: 1; background-color: #16a085; color: white; border: none; padding: 11px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px; }
+        .btn-copy-link   { flex: 1; background-color: #16a085; color: white; border: none; padding: 11px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px; }
         .btn-copy-link:hover { background-color: #138d75; }
         .btn-close-modal { background-color: #95a5a6; color: white; border: none; padding: 11px 18px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px; }
         .btn-close-modal:hover { background-color: #7f8c8d; }
 
-        /* ── Mobile Responsive ────────────────────────────────────── */
+        /* ── Mobile Responsive ──────────────────────────────────────────────── */
         @media (max-width: 768px) {
             body { flex-direction: column; }
-            .sidebar {
-                position: fixed; top: 0; left: 0; height: 100vh;
-                transform: translateX(-100%);
-                overflow-y: auto;
-            }
+            .sidebar { position: fixed; top: 0; left: 0; height: 100vh; transform: translateX(-100%); overflow-y: auto; }
             .sidebar.open { transform: translateX(0); }
             .mobile-nav { display: flex; }
-            .main-content { padding: 14px; }
-            .header { padding-bottom: 10px; margin-bottom: 14px; }
-            .file-area { padding: 14px; }
+            .main-content { padding: 14px; gap: 12px; }
+            .file-area { padding: 12px; }
         }
-        @media (max-width: 520px) {
+        @media (max-width: 500px) {
             .file-row { flex-direction: column; align-items: flex-start; }
             .file-actions { width: 100%; justify-content: flex-start; }
             .btn-group { width: 100%; }
-            .action-btn { flex: 1; text-align: center; font-size: 12px; padding: 8px 6px; }
+            .action-btn { flex: 1; text-align: center; font-size: 12px; padding: 8px 4px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Sidebar overlay (mobile) -->
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
     <!-- Mobile Top Nav -->
     <div class="mobile-nav" id="mobile-nav">
         <button class="hamburger-btn" id="hamburger-btn">☰</button>
         <span class="mobile-title">⚙️ Admin Console</span>
+        <button class="mobile-logout-btn" id="mobile-logout-btn">🚪 Logout</button>
     </div>
 
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <h3>⚙️ ADMIN CONSOLE</h3>
         <p class="sidebar-badge">Full Access Granted</p>
-        <input type="text" id="search-input" class="search-box" placeholder="Search in current folder...">
 
         <div id="storage-widget">
             <div id="storage-text">💾 Connecting...</div>
@@ -155,11 +135,11 @@
             <div>📂 Browse folders &amp; subfolders</div>
             <div>⬆️ Upload files &amp; folders</div>
             <div>📁 Create new folders</div>
-            <div>📤 Share files via link</div>
+            <div>📤 Share files directly</div>
             <div>🗑️ Delete any file or folder</div>
         </div>
 
-        <button id="logout-btn" class="logout-btn">🚪 Log Out</button>
+        <button class="logout-btn" id="logout-btn">🚪 Log Out</button>
     </div>
 
     <!-- Main Content -->
@@ -167,11 +147,16 @@
         <div class="header">
             <h2>Document Management — Admin</h2>
             <div class="btn-group">
-                <button class="action-btn btn-view" id="view-btn">📂 View Files</button>
+                <button class="action-btn btn-view"      id="view-btn">📂 View Files</button>
                 <button class="action-btn btn-upload"    id="upload-btn"     style="display:none;">⬆️ Upload File</button>
                 <button class="action-btn btn-folder"    id="folder-btn"     style="display:none;">📁 Upload Folder</button>
                 <button class="action-btn btn-newfolder" id="new-folder-btn" style="display:none;">➕ New Folder</button>
             </div>
+        </div>
+
+        <!-- Search bar — centred, shown after connecting -->
+        <div class="search-container" id="search-container">
+            <input type="text" class="main-search-box" id="search-input" placeholder="🔍 Search in current folder...">
         </div>
 
         <div class="file-area" id="file-area">
@@ -179,7 +164,7 @@
         </div>
     </div>
 
-    <!-- Share Modal -->
+    <!-- Share Modal (fallback for desktop / non-shareable) -->
     <div class="modal-overlay" id="share-modal">
         <div class="modal-box">
             <h3>📤 Share File</h3>
@@ -198,27 +183,23 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script>
         const CLIENT_ID = '537056870708-utq2jtkio6ccv779c8dmjivac2mo8dnt.apps.googleusercontent.com';
-        const API_KEY   = 'AIzaSyCgEPejR5Vi6njkaQAyqRPA7-O5mY9gF8g';
 
         let tokenClient;
         let accessToken = null;
-        // pathStack: [{id, name}, ...], last = current folder
-        let pathStack = [];
+        let pathStack   = []; // [{id, name}, ...], last = current folder
 
         const fileArea = document.getElementById('file-area');
         function currentFolder() { return pathStack[pathStack.length - 1]; }
 
-        // ── Mobile Sidebar Toggle ──────────────────────────────────────────────
+        // ── Mobile Sidebar ─────────────────────────────────────────────────────
         const sidebar        = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebar-overlay');
-
         function openSidebar()  { sidebar.classList.add('open');    sidebarOverlay.classList.add('active'); }
         function closeSidebar() { sidebar.classList.remove('open'); sidebarOverlay.classList.remove('active'); }
-
         document.getElementById('hamburger-btn').addEventListener('click', openSidebar);
         sidebarOverlay.addEventListener('click', closeSidebar);
 
-        // ── Google Auth ────────────────────────────────────────────────────────
+        // ── Auth ───────────────────────────────────────────────────────────────
         window.onload = function () {
             tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: CLIENT_ID,
@@ -231,13 +212,13 @@
             });
         };
 
-        // ── Toolbar Buttons ────────────────────────────────────────────────────
+        // ── Toolbar ────────────────────────────────────────────────────────────
         document.getElementById('view-btn').addEventListener('click', () => {
             if (!accessToken) tokenClient.requestAccessToken({ prompt: 'select_account' });
             else initDrive();
         });
-        document.getElementById('upload-btn').addEventListener('click', () => document.getElementById('file-input').click());
-        document.getElementById('folder-btn').addEventListener('click', () => document.getElementById('folder-input').click());
+        document.getElementById('upload-btn').addEventListener('click',     () => document.getElementById('file-input').click());
+        document.getElementById('folder-btn').addEventListener('click',     () => document.getElementById('folder-input').click());
         document.getElementById('new-folder-btn').addEventListener('click', () => {
             const name = prompt('Enter new folder name:');
             if (name && name.trim()) createFolder(name.trim());
@@ -252,7 +233,7 @@
                 const data = await res.json();
                 const q    = data.storageQuota;
                 const used = parseInt(q.usage) || 0;
-                const limit = parseInt(q.limit) || 0;
+                const limit = parseInt(q.limit)  || 0;
 
                 function fmt(b) {
                     if (b >= 1024**3) return (b / 1024**3).toFixed(2) + ' GB';
@@ -260,18 +241,16 @@
                     return (b / 1024).toFixed(0) + ' KB';
                 }
 
-                const usedFmt  = fmt(used);
-                const textEl   = document.getElementById('storage-text');
-                const barEl    = document.getElementById('storage-bar');
+                const textEl = document.getElementById('storage-text');
+                const barEl  = document.getElementById('storage-bar');
 
                 if (limit > 0) {
-                    const totalFmt = fmt(limit);
-                    const pct      = Math.min(100, Math.round((used / limit) * 100));
-                    textEl.innerText   = `💾 ${usedFmt} / ${totalFmt} used (${pct}%)`;
-                    barEl.style.width  = pct + '%';
+                    const pct = Math.min(100, Math.round((used / limit) * 100));
+                    textEl.innerText      = `💾 ${fmt(used)} / ${fmt(limit)} (${pct}%)`;
+                    barEl.style.width     = pct + '%';
                     barEl.style.background = pct > 85 ? '#ff6b6b' : '#ffbaba';
                 } else {
-                    textEl.innerText  = `💾 ${usedFmt} used (Unlimited)`;
+                    textEl.innerText  = `💾 ${fmt(used)} used (Unlimited)`;
                     barEl.style.width = '0%';
                 }
             } catch (e) {
@@ -288,16 +267,15 @@
                     headers: { 'Authorization': 'Bearer ' + accessToken }
                 });
                 const data = await res.json();
-
                 if (!data.files || data.files.length === 0) {
                     fileArea.innerHTML = '<p style="color:red;">Error: "Client Documents" folder not found in Drive.</p>';
                     return;
                 }
-
                 pathStack = [{ id: data.files[0].id, name: 'Client Documents' }];
-                document.getElementById('upload-btn').style.display    = 'inline-block';
-                document.getElementById('folder-btn').style.display    = 'inline-block';
+                document.getElementById('upload-btn').style.display     = 'inline-block';
+                document.getElementById('folder-btn').style.display     = 'inline-block';
                 document.getElementById('new-folder-btn').style.display = 'inline-block';
+                document.getElementById('search-container').style.display = 'block';
                 document.getElementById('view-btn').innerText = '🔄 Refresh';
                 fetchFilesFromDrive();
             } catch (e) {
@@ -309,6 +287,7 @@
         // ── Fetch & Render ─────────────────────────────────────────────────────
         async function fetchFilesFromDrive() {
             fileArea.innerHTML = '<p style="color:#7a1f1f;font-weight:bold;">Syncing with secure vault...</p>';
+            document.getElementById('search-input').value = '';
             try {
                 const folder = currentFolder();
                 const q      = `'${folder.id}' in parents and trashed=false`;
@@ -319,7 +298,7 @@
                 const data = await res.json();
                 fileArea.innerHTML = '';
 
-                // Top bar: back button + breadcrumb
+                // Top bar
                 const topBar = document.createElement('div');
                 topBar.className = 'topbar';
 
@@ -342,7 +321,7 @@
                     if (idx > 0) {
                         const sep = document.createElement('span');
                         sep.className = 'crumb-sep';
-                        sep.innerText = '›';
+                        sep.innerText = ' › ';
                         bc.appendChild(sep);
                     }
                     const span = document.createElement('span');
@@ -360,7 +339,6 @@
                 topBar.appendChild(bc);
                 fileArea.appendChild(topBar);
 
-                // Item count
                 const count    = data.files ? data.files.length : 0;
                 const countDiv = document.createElement('div');
                 countDiv.className = 'file-count';
@@ -375,7 +353,6 @@
                     return;
                 }
 
-                // File rows
                 data.files.forEach(file => {
                     const row     = document.createElement('div');
                     row.className = 'file-row';
@@ -409,15 +386,14 @@
                         dlLink.target     = '_blank';
                         actions.appendChild(dlLink);
 
-                        // Share button (admin only, files only)
+                        // Share — sends the actual file (not a link)
                         const shareBtn = document.createElement('button');
                         shareBtn.className = 'btn-share';
                         shareBtn.innerText  = '📤 Share';
-                        shareBtn.onclick    = () => shareFile(file.id, file.name, file.webViewLink);
+                        shareBtn.onclick    = () => shareFileDirect(file.id, file.name, file.webViewLink);
                         actions.appendChild(shareBtn);
                     }
 
-                    // Delete (admin only — folders and files)
                     const delBtn = document.createElement('button');
                     delBtn.className = 'btn-delete';
                     delBtn.innerText  = 'Delete';
@@ -435,64 +411,88 @@
             }
         }
 
-        // ── Share File ─────────────────────────────────────────────────────────
-        async function shareFile(fileId, fileName, existingViewLink) {
-            openShareModal(fileName, '');
+        // ── Share File Directly ────────────────────────────────────────────────
+        // On mobile: uses Web Share API to send the actual file.
+        // On desktop / fallback: shows a copy-link modal.
+        async function shareFileDirect(fileId, fileName, existingViewLink) {
+            const shareBtn = event.target;
+            const origText = shareBtn.innerText;
+            shareBtn.innerText = '⏳ Preparing...';
+            shareBtn.disabled  = true;
+
             try {
-                // Grant public read access (anyone with the link)
+                // Ensure the file is publicly readable so the link works for the recipient
                 await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}/permissions`, {
                     method: 'POST',
-                    headers: {
-                        'Authorization': 'Bearer ' + accessToken,
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ role: 'reader', type: 'anyone' })
                 });
 
-                // Get the shareable view link
-                let shareLink = existingViewLink;
-                if (!shareLink) {
-                    const res  = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?fields=webViewLink`, {
-                        headers: { 'Authorization': 'Bearer ' + accessToken }
-                    });
-                    const data = await res.json();
-                    shareLink  = data.webViewLink;
+                // Try to download the file as a blob and share it directly
+                const mediaRes = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+                    headers: { 'Authorization': 'Bearer ' + accessToken }
+                });
+
+                if (mediaRes.ok) {
+                    const blob    = await mediaRes.blob();
+                    const fileObj = new File([blob], fileName, { type: blob.type || 'application/octet-stream' });
+
+                    // Web Share API with file support (mobile Chrome/Safari)
+                    if (navigator.canShare && navigator.canShare({ files: [fileObj] })) {
+                        shareBtn.innerText = origText;
+                        shareBtn.disabled  = false;
+                        await navigator.share({ files: [fileObj], title: fileName });
+                        return;
+                    }
                 }
 
-                document.getElementById('share-link-input').value = shareLink || 'Could not generate link.';
+                // Fallback 1: Web Share API with link (mobile, no file support)
+                let shareUrl = existingViewLink;
+                if (!shareUrl) {
+                    const meta = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?fields=webViewLink`, {
+                        headers: { 'Authorization': 'Bearer ' + accessToken }
+                    }).then(r => r.json());
+                    shareUrl = meta.webViewLink;
+                }
+
+                if (navigator.share) {
+                    shareBtn.innerText = origText;
+                    shareBtn.disabled  = false;
+                    await navigator.share({ title: fileName, url: shareUrl });
+                    return;
+                }
+
+                // Fallback 2: Desktop — show copy-link modal
+                shareBtn.innerText = origText;
+                shareBtn.disabled  = false;
+                openShareModal(fileName, shareUrl);
+
             } catch (e) {
-                document.getElementById('share-link-input').value = 'Error generating link.';
-                console.error(e);
+                shareBtn.innerText = origText;
+                shareBtn.disabled  = false;
+                if (e.name !== 'AbortError') {
+                    alert('Could not share file: ' + e.message);
+                }
             }
         }
 
         function openShareModal(fileName, link) {
             document.getElementById('share-file-name').innerText  = '📄 ' + fileName;
-            document.getElementById('share-link-input').value     = link || 'Generating link…';
+            document.getElementById('share-link-input').value     = link || '';
             document.getElementById('share-modal').classList.add('active');
         }
-
         function closeShareModal() {
             document.getElementById('share-modal').classList.remove('active');
-            document.getElementById('share-link-input').value = '';
         }
-
         document.getElementById('close-modal-btn').addEventListener('click', closeShareModal);
-        document.getElementById('share-modal').addEventListener('click', function (e) {
-            if (e.target === this) closeShareModal();
-        });
-
+        document.getElementById('share-modal').addEventListener('click', function (e) { if (e.target === this) closeShareModal(); });
         document.getElementById('copy-link-btn').addEventListener('click', () => {
             const input = document.getElementById('share-link-input');
-            input.select();
-            input.setSelectionRange(0, 99999);
             navigator.clipboard.writeText(input.value).then(() => {
                 const btn = document.getElementById('copy-link-btn');
                 btn.innerText = '✅ Copied!';
                 setTimeout(() => { btn.innerText = '📋 Copy Link'; }, 2000);
-            }).catch(() => {
-                document.execCommand('copy');
-            });
+            }).catch(() => { input.select(); document.execCommand('copy'); });
         });
 
         // ── Delete ─────────────────────────────────────────────────────────────
@@ -500,8 +500,7 @@
             if (!confirm(`Permanently delete "${fileName}"?\n\nThis cannot be undone.`)) return;
             try {
                 const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': 'Bearer ' + accessToken }
+                    method: 'DELETE', headers: { 'Authorization': 'Bearer ' + accessToken }
                 });
                 if (res.ok) fetchFilesFromDrive();
                 else alert('Delete failed. Please try again.');
@@ -523,8 +522,7 @@
 
         // ── Upload File ────────────────────────────────────────────────────────
         document.getElementById('file-input').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
+            const file = e.target.files[0]; if (!file) return;
             alert(`Uploading "${file.name}" to "${currentFolder().name}"…`);
             await uploadFile(file, currentFolder().id, true);
             e.target.value = '';
@@ -532,8 +530,7 @@
 
         // ── Upload Folder ──────────────────────────────────────────────────────
         document.getElementById('folder-input').addEventListener('change', async (e) => {
-            const files = e.target.files;
-            if (!files.length) return;
+            const files = e.target.files; if (!files.length) return;
             alert(`Uploading ${files.length} file(s) to "${currentFolder().name}"…`);
             for (let i = 0; i < files.length; i++) await uploadFile(files[i], currentFolder().id, false);
             alert('Folder upload complete!');
@@ -578,10 +575,14 @@
         };
         const app  = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        document.getElementById('logout-btn').addEventListener('click', () => {
-            signOut(auth).then(() => { window.location.href = 'index.html'; })
-                         .catch(err => alert('Error: ' + err.message));
-        });
+
+        function doLogout() {
+            // For hardcoded admin bypass, just redirect directly
+            signOut(auth).catch(() => {}).finally(() => { window.location.href = 'index.html'; });
+        }
+
+        document.getElementById('logout-btn').addEventListener('click', doLogout);
+        document.getElementById('mobile-logout-btn').addEventListener('click', doLogout);
     </script>
 </body>
 </html>
